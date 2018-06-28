@@ -1,21 +1,22 @@
 
 # Thread Pool Benchmark
-A C++ Thread Pool Colosseum </br></br>
+A C++ Thread Pool Colosseum </br>
 
 ## Introduction
-Here is the C++ Thread Pool Colosseum where various C++ thread pool implementations fight for glory and fortune.</br></br>
+Here is the C++ Thread Pool Colosseum where various C++ thread pool implementations fight for glory and fortune.</br>
 
 ## Gladiators
-* [Grand Central Dispatch](https://github.com/apple/swift-corelibs-libdispatch), Apple
+* C++11 Threads </br>
+* Sean Parent's implementation as suggested in [Boostcon](https://youtu.be/32f6JrQPV8c)
 * [HPX](https://github.com/STEllAR-GROUP/hpx), STEllAR-GROUP
-* C++11 Threads </br></br>
+* [Grand Central Dispatch](https://github.com/apple/swift-corelibs-libdispatch), Apple
 
 ## Fight Events
-* Matrix Multiplication </br></br>
+* Matrix Multiplication </br>
 
 ## Contributions
 All contributions are welcome, </br>
-including new types of benchmark problems and publicly available thread pool implementations</br></br>
+including new types of benchmark problems and publicly available thread pool implementations</br>
 
 ## LICENSE
 
