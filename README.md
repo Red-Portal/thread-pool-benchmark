@@ -3,6 +3,14 @@
 A C++ Thread Pool Colosseum, </br>
 where various C++ thread pool implementations fight for glory and fortune.</br>
 
+## Install
+
+```shell
+git clone --recursive https://github.com/Red-Portal/thread-pool-benchmark.git
+cmake -G "<Generator>"
+make -j4
+```
+
 ## Gladiators
 * C++11 Threads </br>
 * Sean Parent's implementation as suggested in [Boostcon](https://youtu.be/32f6JrQPV8c)
