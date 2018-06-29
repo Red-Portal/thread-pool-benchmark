@@ -13,12 +13,14 @@ where various C++ thread pool implementations fight for glory and fortune.</br>
 Intel Core i7-7700HQ, Manjaro Linux. </br>
 1024 x 1024 Matrix Multiplication Event. </br>
  </br>
-                         forking      joining         total (ms:us:ns)</br>
-C++ thread              14:754:27,  2881:658:460,  2896:412:487 </br>
-Sean Parent Naive       1:258:388,  2946:454:719,  2947:713:107 </br>
-Sean Parent Multiqueue  1:279:541,  2934:516:668,  2935:796:209 </br>
-Sean Parent Work Steal  2:428:356,  2911:868:401,  2914:296:757 </br>
-Grand Central Dispatch  0:986:258,  2813:885:471,  2814:871:729 </br>
+     
+|         | forking | joining | total |
+|---------|---------|---------|-------|
+| C++ thread             | 14:754:27 | 2881:658:460 | 2896:412:487 |
+| Sean Parent Naive      | 1:258:388 | 2946:454:719 | 2947:713:107 | 
+| Sean Parent Multiqueue | 1:279:541 | 2934:516:668 | 2935:796:209 |
+| Sean Parent Work Steal | 2:428:356 | 2911:868:401 | 2914:296:757 |
+| Grand Central Dispatch | 0:986:258 | 2813:885:471 | 2814:871:729 |
 
 ## Fight Events
 * Matrix Multiplication </br>
