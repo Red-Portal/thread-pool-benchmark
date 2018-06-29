@@ -7,6 +7,7 @@ where various C++ thread pool implementations fight for glory and fortune.</br>
 * C++11 Threads </br>
 * Sean Parent's implementation as suggested in [Boostcon](https://youtu.be/32f6JrQPV8c)
 * [Grand Central Dispatch](https://github.com/apple/swift-corelibs-libdispatch), Apple
+* [Thread Building Blocks](https://github.com/01org/tbb), Intel 
 * ~~[HPX](https://github.com/STEllAR-GROUP/hpx), STEllAR-GROUP~~ To be added
 
 ## Fight Events
