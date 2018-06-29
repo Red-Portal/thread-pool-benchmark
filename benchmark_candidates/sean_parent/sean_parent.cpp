@@ -96,7 +96,6 @@ namespace sparent_multiqueue
     REGISTER_RUNNER(sean_parent_multiqueue)
 }
 
-
 namespace sparent_worksteal
 {
     namespace internal 

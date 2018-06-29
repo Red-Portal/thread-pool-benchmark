@@ -17,6 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _POOL_BENCH_GRAND_CENTRAL_DISPATCH_HPP_
+#define _POOL_BENCH_GRAND_CENTRAL_DISPATCH_HPP_
+
 #include <functional>
 #include <future>
 #include <type_traits>
@@ -46,3 +49,5 @@ namespace dispatch
         return result;
     }
 }
+
+#endif

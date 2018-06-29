@@ -14,17 +14,16 @@ set(SOURCE_FILES
     ${PROJECT_SOURCE_DIR}/main.cpp
     ${PROJECT_SOURCE_DIR}/benchmark_problems/matrix_multiplication.cpp)
 
+set(BENCHMARK_CANDIDATES_DIR ${PROJECT_SOURCE_DIR}/benchmark_candidates)
+
 if(WITH_CPP_THREADS)
     set(SOURCE_FILES ${SOURCE_FILES}
-	${PROJECT_SOURCE_DIR}/benchmark_candidates/cpp_threads/cpp_threads.cpp
-	${PROJECT_SOURCE_DIR}/benchmark_candidates/sean_parent/sean_parent.cpp)
+	${BENCHMARK_CANDIDATES_DIR}/cpp_threads/cpp_threads.cpp
+	${BENCHMARK_CANDIDATES_DIR}/sean_parent/sean_parent.cpp)
 endif()
-
 if(WITH_GCD)
-    find_package(dispatch REQUIRED)
-    # set(SOURCE_FILES ${SOURCE_FILES}
-    # 	${PROJECT_SOURCE_DIR}/benchmark_candidates/cpp_threads/cpp_threads.cpp
-    # 	${PROJECT_SOURCE_DIR}/benchmark_candidates/sean_parent/sean_parent.cpp)
+    set(SOURCE_FILES ${SOURCE_FILES}
+	${BENCHMARK_CANDIDATES_DIR}/grand_central_dispatch/grand_central_dispatch.cpp)
 endif()
 
 # if(WITH_HPX)
@@ -55,5 +54,19 @@ endif()
 
 find_package (Threads)
 target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
+
+if(WITH_GCD)
+    if (NOT("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
+	message(FATAL_ERROR "Grand Central Dispatch requires clang as compiler.")
+    endif()
+
+    find_package(dispatch REQUIRED)
+
+    target_include_directories(${PROJECT_NAME}
+	PUBLIC ${DISPATCH_INCLUDE_DIRS})
+
+    target_link_libraries(${PROJECT_NAME}
+	${DISPATCH_LIBRARIES})
+endif()
 
 message("C++ flags = ${BUILD_FLAGS}")
