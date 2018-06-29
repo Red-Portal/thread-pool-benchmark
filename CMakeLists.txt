@@ -20,7 +20,8 @@ set(BENCHMARK_CANDIDATES_DIR ${PROJECT_SOURCE_DIR}/benchmark_candidates)
 if(WITH_CPP_THREADS)
     set(SOURCE_FILES ${SOURCE_FILES}
 	${BENCHMARK_CANDIDATES_DIR}/cpp_threads/cpp_threads.cpp
-	${BENCHMARK_CANDIDATES_DIR}/sean_parent/sean_parent.cpp)
+	${BENCHMARK_CANDIDATES_DIR}/sean_parent/sean_parent.cpp
+	${BENCHMARK_CANDIDATES_DIR}/progschj_ThreadPool/progschj_ThreadPool.cpp)
 endif()
 if(WITH_GCD)
     set(SOURCE_FILES ${SOURCE_FILES}

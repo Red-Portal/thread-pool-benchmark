@@ -16,7 +16,9 @@ make -j4
 * Sean Parent's implementation as suggested in [Boostcon](https://youtu.be/32f6JrQPV8c)
 * [Grand Central Dispatch](https://github.com/apple/swift-corelibs-libdispatch), Apple
 * [Thread Building Blocks](https://github.com/01org/tbb), Intel 
+* [ThreadPool](https://github.com/progschj/ThreadPool), progschj
 * ~~[HPX](https://github.com/STEllAR-GROUP/hpx), STEllAR-GROUP~~ To be added
+
 
 ## Fight Events
 * Matrix Multiplication </br>
