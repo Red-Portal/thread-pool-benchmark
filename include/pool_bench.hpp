@@ -59,7 +59,7 @@ namespace pool_bench
         virtual void prepare() = 0;
         virtual void teardown() = 0;
 
-        virtual std::function<std::future<void>(std::function<void(void)>)>
+        virtual std::function<std::future<void>(std::function<void(void)>&&)>
         operator()() = 0;
     };
 

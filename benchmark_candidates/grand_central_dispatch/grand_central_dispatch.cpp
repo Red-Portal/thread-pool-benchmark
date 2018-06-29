@@ -1,5 +1,4 @@
 
-
 /* 
  * thread-pool-benchmark, a C++ Thread Pool Colosseum
  * Copyright (C) 2018  Red-Portal
@@ -37,11 +36,11 @@ namespace dispatch
         void teardown() override
         {}
 
-        std::function<std::future<void>(std::function<void(void)>)>
+        std::function<std::future<void>(std::function<void(void)>&&)>
         operator()() override
         {
             return [](std::function<void(void)>&& f)
-                   { return dispatch::async(f); };
+                   { return dispatch::async(std::move(f)); };
         }
     };
     REGISTER_RUNNER(grand_central_dispatch)

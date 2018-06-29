@@ -18,32 +18,30 @@
  */
 
 #include <cstdlib>
-#include <future>
-#include <functional>
 
 #include <pool_bench.hpp>
+#include "thread_building_blocks.hpp"
 
-struct cpp_threads : pool_bench::runner
+namespace pool_bench_tbb
 {
-    cpp_threads()
-        : pool_bench::runner()
-    {}
-
-    char const*
-    name() override
+    struct tbb : pool_bench::runner
     {
-        return "C++ thread";
-    }
+        char const*
+        name() override
+        { return "Thread Building Blocks"; }
 
-    void prepare() override {}
-    void teardown() override {}
+        void prepare() override
+        {}
 
-    std::function<std::future<void>(std::function<void(void)>&&)>
-    operator()() override
-    {
-        return [](std::function<void(void)>&& f)
-               { return std::async(std::launch::async, std::move(f)); };
-    }
-};
+        void teardown() override
+        {}
 
-REGISTER_RUNNER(cpp_threads)
+        std::function<std::future<void>(std::function<void(void)>&&)>
+        operator()() override
+        {
+            return [](std::function<void(void)>&& f)
+                   { return pool_bench_tbb::async(std::move(f)); };
+        }
+    };
+    REGISTER_RUNNER(tbb)
+}

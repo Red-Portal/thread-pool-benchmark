@@ -138,4 +138,5 @@ int main()
               << " registered benchmark problems"
               << std::endl;
     pool_bench::run_benchmarks(pool_bench::get_suites(), pool_bench::get_runners());
+    return 0;
 }

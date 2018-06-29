@@ -9,6 +9,9 @@ where various C++ thread pool implementations fight for glory and fortune.</br>
 * [Grand Central Dispatch](https://github.com/apple/swift-corelibs-libdispatch), Apple
 * ~~[HPX](https://github.com/STEllAR-GROUP/hpx), STEllAR-GROUP~~ To be added
 
+## Fight Events
+* Matrix Multiplication </br>
+
 ## Example Results 
 Intel Core i7-7700HQ, Manjaro Linux. </br>
 1024 x 1024 Matrix Multiplication Event. </br>
@@ -21,9 +24,6 @@ Intel Core i7-7700HQ, Manjaro Linux. </br>
 | Sean Parent Multiqueue | 1:279:541 | 2934:516:668 | 2935:796:209 |
 | Sean Parent Work Steal | 2:428:356 | 2911:868:401 | 2914:296:757 |
 | Grand Central Dispatch | 0:986:258 | 2813:885:471 | 2814:871:729 |
-
-## Fight Events
-* Matrix Multiplication </br>
 
 ## Contributions
 All contributions are welcome, </br>

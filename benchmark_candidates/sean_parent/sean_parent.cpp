@@ -51,11 +51,11 @@ namespace sparent_naive
         void teardown() override
         { internal::sys = nullptr; }
 
-        std::function<std::future<void>(std::function<void(void)>)>
+        std::function<std::future<void>(std::function<void(void)>&&)>
         operator()() override
         {
             return [](std::function<void(void)>&& f)
-                   { return sparent_naive::async(f); };
+                   { return sparent_naive::async(std::move(f)); };
         }
     };
     REGISTER_RUNNER(sparent_naive_runner)
@@ -86,11 +86,11 @@ namespace sparent_multiqueue
         void teardown() override
         { internal::sys = nullptr; }
 
-        std::function<std::future<void>(std::function<void(void)>)>
+        std::function<std::future<void>(std::function<void(void)>&&)>
         operator()() override
         {
             return [](std::function<void(void)>&& f)
-                   { return sparent_multiqueue::async(f); };
+                   { return sparent_multiqueue::async(std::move(f)); };
         }
     };
     REGISTER_RUNNER(sean_parent_multiqueue)
@@ -121,11 +121,11 @@ namespace sparent_worksteal
         { internal::sys = nullptr; }
 
 
-        std::function<std::future<void>(std::function<void(void)>)>
+        std::function<std::future<void>(std::function<void(void)>&&)>
         operator()() override
         {
             return [](std::function<void(void)>&& f)
-                   { return sparent_worksteal::async(f); };
+                   { return sparent_worksteal::async(std::move(f)); };
         }
     };
     REGISTER_RUNNER(sean_parent_worksteal)

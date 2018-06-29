@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 3.5)
 project(thread-pool-benchmark)
 
 option(WITH_CPP_THREADS "Run benchmark with c++11 threads" ON)
-option(WITH_HPX "Run benchmark with HPX" ON)
+#option(WITH_HPX "Run benchmark with HPX" ON)
 option(WITH_GCD "Run benchmark with Grand Central Dispatch" ON)
+option(WITH_TBB "Run benchmark with Intel TBB" ON)
 
 # cmake modules path
 set(CMAKE_MODULE_PATH
@@ -25,13 +26,14 @@ if(WITH_GCD)
     set(SOURCE_FILES ${SOURCE_FILES}
 	${BENCHMARK_CANDIDATES_DIR}/grand_central_dispatch/grand_central_dispatch.cpp)
 endif()
-
 # if(WITH_HPX)
-#     find_package(HPX REQUIRED)
 #     set(SOURCE_FILES ${SOURCE_FILES}
-# 	${PROJECT_SOURCE_DIR}/benchmark_candidates/cpp_threads/cpp_threads.cpp
-# 	${PROJECT_SOURCE_DIR}/benchmark_candidates/sean_parent/sean_parent.cpp)
+# 	${BENCHMARK_CANDIDATES_DIR}/hpx/hpx.cpp)
 # endif()
+if(WITH_TBB)
+    set(SOURCE_FILES ${SOURCE_FILES}
+	${BENCHMARK_CANDIDATES_DIR}/thread_building_blocks/thread_building_blocks.cpp)
+endif()
 
 message("[ Source files for ${PROJECT_NAME} ]")
 foreach(SOURCE_FILE ${SOURCE_FILES})
@@ -39,7 +41,6 @@ foreach(SOURCE_FILE ${SOURCE_FILES})
 endforeach()
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-
 target_include_directories(${PROJECT_NAME}
     PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
@@ -61,12 +62,26 @@ if(WITH_GCD)
     endif()
 
     find_package(dispatch REQUIRED)
-
     target_include_directories(${PROJECT_NAME}
 	PUBLIC ${DISPATCH_INCLUDE_DIRS})
-
     target_link_libraries(${PROJECT_NAME}
 	${DISPATCH_LIBRARIES})
 endif()
+# if(WITH_HPX)
+#     find_package(HPX REQUIRED)
+#     add_definitions(-DWITH_HPX)
+#     target_include_directories(${PROJECT_NAME}
+# 	PUBLIC ${HPX_INCLUDE_DIRS})
+#     target_link_libraries(${PROJECT_NAME}
+# 	${HPX_LIBRARIES})
+# endif()
+if(WITH_TBB)
+    find_package(TBB REQUIRED)
+    target_include_directories(${PROJECT_NAME}
+	PUBLIC ${TBB_INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME}
+	${TBB_LIBRARIES})
+endif()
+
 
 message("C++ flags = ${BUILD_FLAGS}")
