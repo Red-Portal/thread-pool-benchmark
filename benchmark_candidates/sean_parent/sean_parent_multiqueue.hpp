@@ -26,7 +26,7 @@
 #include <thread>
 #include <vector>
 
-namespace sparent_naive
+namespace sparent_multiqueue
 {
     namespace internal{
         using lock_t = std::unique_lock<std::mutex>; 
@@ -42,7 +42,7 @@ namespace sparent_naive
             done()
             {
                 {
-                    std::unique_lock<std::mutex> lock{_mutex};
+                    lock_t lock{_mutex};
                     _done = true;
                 }
                 _ready.notify_all();
@@ -52,7 +52,7 @@ namespace sparent_naive
             pop(std::function<void()>& x)
             {
                 lock_t lock{_mutex};
-                while(_q.empty())
+                while(_q.empty() && !_done)
                 {
                     _ready.wait(lock);
                 }
@@ -63,13 +63,12 @@ namespace sparent_naive
                 return true;
             }
 
-            template<typename F>
             inline void
-            push(F&& f)
+            push(std::function<void()>&& f)
             {
                 {
                     lock_t lock{_mutex};
-                    _q.emplace_back(std::forward<F>(f));
+                    _q.emplace_back(std::move(f));
                 }
                 _ready.notify_one();
             }
@@ -79,40 +78,45 @@ namespace sparent_naive
         {
             unsigned const _count;
             std::vector<std::thread> _threads;
-            notification_queue _q;
+            std::vector<notification_queue> _q;
+            std::atomic<unsigned> _index;
 
             inline void
             run(unsigned i)
             {
-                (void)i;
                 while(true)
                 {
                     std::function<void()> f;
-                    _q.pop(f);
+                    if(!f && !_q[i].pop(f))
+                        break;
                     f();
                 }
             }
 
         public:
             inline task_system()
-                : _count(std::thread::hardware_concurrency() - 1),
+                : _count(std::thread::hardware_concurrency()),
                   _threads(),
-                  _q()
+                  _q(_count),
+                  _index(0)
             {
-                for(unsigned n = 0; n != _count; ++n) {
-                    _threads.emplace_back([&, n]{ run(n); });
-                }
+                for(unsigned n = 0; n != _count; ++n)
+                    _threads.emplace_back([this, n]{ run(n); });
             }
 
             inline ~task_system()
             {
+                for(auto& e: _q)
+                    e.done();
                 for(auto& e : _threads)
                     e.join();
             }
 
             inline void
-            push(std::function<void()>&& f){
-                _q.push(std::move(f));
+            push(std::function<void()>&& f)
+            {
+                auto i = _index++;
+                _q[i % _count].push(std::move(f));
             }
         };
 
@@ -139,4 +143,3 @@ namespace sparent_naive
         return result;
     }
 }
-

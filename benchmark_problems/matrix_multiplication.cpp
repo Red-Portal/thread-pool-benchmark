@@ -23,7 +23,7 @@
 #include <future>
 #include <random>
 
-#include "../pool_bench.hpp"
+#include <pool_bench.hpp>
 
 template<typename Dist, typename Rng, typename It>
 inline void
@@ -55,7 +55,7 @@ struct matrix_multiplication : public pool_bench::suite
          _B(_problem_size * _problem_size),
          _C(_problem_size * _problem_size),
          _C_answer(_problem_size * _problem_size),
-         _epsilon(1e-5)
+         _epsilon(1e-6)
     {}
 
     size_t
@@ -82,6 +82,13 @@ struct matrix_multiplication : public pool_bench::suite
     
     void prepare() override
     {
+        std::random_device seed;
+        std::mt19937 rng;
+        std::normal_distribution<float> dist(0, 1);
+
+        generate_random(dist, rng, _A.begin(), _A.end());
+        generate_random(dist, rng, _B.begin(), _B.end());
+
         size_t m = _problem_size;
         size_t k = _problem_size;
         size_t n = _problem_size;
@@ -94,13 +101,6 @@ struct matrix_multiplication : public pool_bench::suite
                 _C_answer[index(i, j, n)] = sum;
             }
         }
-
-        std::random_device seed;
-        std::mt19937 rng;
-        std::normal_distribution<float> dist(0, 1);
-
-        generate_random(dist, rng, _A.begin(), _A.end());
-        generate_random(dist, rng, _B.begin(), _B.end());
     }
 
     void teardown() override {}

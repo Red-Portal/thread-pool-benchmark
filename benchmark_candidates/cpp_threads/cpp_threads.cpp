@@ -21,7 +21,7 @@
 #include <future>
 #include <functional>
 
-#include "../pool_bench.hpp"
+#include <pool_bench.hpp>
 
 struct cpp_threads : pool_bench::runner
 {

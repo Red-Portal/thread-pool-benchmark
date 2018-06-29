@@ -24,11 +24,30 @@
 #include <memory>
 #include <random>
 #include <string>
+#include <tuple>
 
 #include "pool_bench.hpp"
 
 namespace pool_bench
 {
+    template<class...Durations, class DurationIn>
+    std::tuple<Durations...>
+    break_down_durations( DurationIn d )
+    /* 
+     * taken from https://stackoverflow.com/questions/42138599/how-to-format-stdchrono-durations
+     * copyright: Adam Nevraumont
+     */
+    {
+        std::tuple<Durations...> retval;
+        using discard=int[];
+        (void)discard{0,(
+                void(((std::get<Durations>(retval) =
+                       std::chrono::duration_cast<Durations>(d)),
+                      (d -= std::chrono::duration_cast<DurationIn>(
+                          std::get<Durations>(retval))))),0)...};
+        return retval;
+    }
+
     template<typename F, typename Ft>
     inline std::tuple<chrono::nanoseconds, chrono::nanoseconds>
     execute_benchmark(F&& f, Ft&& task, size_t problem_size)
@@ -52,6 +71,20 @@ namespace pool_bench
         return {insert_duration, retrieve_duration};
     }
 
+    template<typename Duration>
+    inline std::string
+    format_time(Duration&& duration)
+    {
+        
+        auto broken = break_down_durations<chrono::milliseconds,
+                                           chrono::microseconds,
+                                           chrono::nanoseconds>(duration);
+        auto formmated = std::to_string(std::get<0>(broken).count()) + ":"
+            + std::to_string(std::get<1>(broken).count()) + ":"
+            + std::to_string(std::get<2>(broken).count()) + " ms";
+        return formmated;
+    }
+
     void run_benchmarks(std::vector<pool_bench::suite*>& suites,
                         std::vector<pool_bench::runner*>& runners)
     {
@@ -69,14 +102,14 @@ namespace pool_bench
                 j->prepare();
 
                 auto result = pool_bench::execute_benchmark((*j)(), task, problem_size);
-                auto first = chrono::duration_cast<chrono::milliseconds>(std::get<0>(result));
-                auto second = chrono::duration_cast<chrono::milliseconds>(std::get<1>(result));
-                int insertion = first.count();
-                int processing = second.count();
+                auto fork_duration = std::get<0>(result);
+                auto join_duration = std::get<1>(result);
+                auto total_duration = fork_duration + join_duration;
+
                 std::cout << j->name()
-                          << " insertion: " << insertion << "ms, "
-                          << " processing: " << processing << "ms, "
-                          << " total: " << insertion + processing << "ms\n";
+                          << " forking: " << format_time(fork_duration) << ", "
+                          << " joining: " << format_time(join_duration) << ", "
+                          << " total: " << format_time(total_duration) << "\n";
 
                 if(!i->check_result())
                 {
@@ -88,10 +121,9 @@ namespace pool_bench
 
                 j->teardown();
             }
-            std::cout << "-- tearing down " << i->name() << std::endl;
-            std::cout << "-- tearing down " << i->name() << " - done\n"<< std::endl;
+            std::cout << "\n-- tearing down " << i->name() << std::endl;
             i->teardown();
-            std::cout << std::endl;
+            std::cout << "-- tearing down " << i->name() << " - done" << std::endl;
         }
     }
 }

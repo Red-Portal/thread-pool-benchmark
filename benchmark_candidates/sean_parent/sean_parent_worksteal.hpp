@@ -25,7 +25,9 @@
 #include <vector>
 #include <thread>
 
-namespace sparent_multiqueue
+#define K 48
+
+namespace sparent_worksteal
 {
     namespace internal{
         using lock_t = std::unique_lock<std::mutex>; 
@@ -41,24 +43,33 @@ namespace sparent_multiqueue
             done()
             {
                 {
-                    std::unique_lock<std::mutex> lock{_mutex};
+                    lock_t lock{_mutex};
                     _done = true;
                 }
                 _ready.notify_all();
             }
 
             inline bool
-            pop(std::function<void()>& x)
+            try_pop(std::function<void()>& x)
             {
-                lock_t lock{_mutex};
-                while(_q.empty())
-                {
-                    _ready.wait(lock);
-                }
-                if(_q.empty())
+                lock_t lock{_mutex, std::try_to_lock};
+                if(!lock || _q.empty())
                     return false;
                 x = move(_q.front());
                 _q.pop_front();
+                return true;
+            }
+
+            inline bool
+            try_push(std::function<void()>&& f)
+            {
+                {
+                    lock_t lock{_mutex, std::try_to_lock};
+                    if(!lock)
+                        return false;
+                    _q.emplace_back(std::move(f));
+                }
+                _ready.notify_one();
                 return true;
             }
 
@@ -70,6 +81,21 @@ namespace sparent_multiqueue
                     _q.emplace_back(std::move(f));
                 }
                 _ready.notify_one();
+            }
+
+            inline bool
+            pop(std::function<void()>& x)
+            {
+                lock_t lock{_mutex};
+                while(_q.empty() && !_done)
+                {
+                    _ready.wait(lock);
+                }
+                if(_q.empty())
+                    return false;
+                x = move(_q.front());
+                _q.pop_front();
+                return true;
             }
         };
 
@@ -86,7 +112,12 @@ namespace sparent_multiqueue
                 while(true)
                 {
                     std::function<void()> f;
-                    if(!_q[i].pop(f))
+                    for(unsigned n = 0; n != _count; ++n)
+                    {
+                        if(_q[(i + n) % _count].try_pop(f))
+                            break;
+                    }
+                    if(!f && !_q[i].pop(f))
                         break;
                     f();
                 }
@@ -96,7 +127,7 @@ namespace sparent_multiqueue
             inline task_system()
                 : _count(std::thread::hardware_concurrency()),
                   _threads(),
-                  _q(),
+                  _q(_count),
                   _index(0)
             {
                 for(unsigned n = 0; n != _count; ++n)
@@ -114,6 +145,11 @@ namespace sparent_multiqueue
             inline void
             push(std::function<void()>&& f){
                 auto i = _index++;
+                for(unsigned n = 0; n != _count * K; ++n)
+                {
+                    if(_q[(i + n) % _count].try_push(std::move(f)))
+                        return;
+                }
                 _q[i % _count].push(std::move(f));
             }
         };
