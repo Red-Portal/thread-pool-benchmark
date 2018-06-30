@@ -29,14 +29,14 @@ Intel Core i7-7700HQ, Manjaro Linux, clang 6.0.0 </br>
 respectively ms \: us \: ns  </br>
  </br>
      
-|         | forking | joining | total |
-|---------|---------|---------|-------|
-| C++ thread             | 13:952:610 | 3234:782:593 | 3248:735:203 |
-| Sean Parent Naive      |  1:163:562 | 3199:446:433 | 3200:609:995 | 
-| Sean Parent Multiqueue |  1:689:353 | 3191:830:204 | 3193:519:557 |
-| Sean Parent Work Steal |  1:172:337 | 3129:783:927 | 3130:956:264 |
-| Grand Central Dispatch |  1:112:406 | 3034:694:607 | 3035:817: 13 |
-| Thread Building Blocks |  2: 12:426 | 3165:723:263 | 3167:735:689 |
+|                         |   forking   |    joining   |     total    |
+|-------------------------|-------------|--------------|--------------|
+C++ thread                | 22.010224ms | 690.549730ms | 712.559954ms |
+Sean Parent Naive         |  0.282063ms | 572.805879ms | 573.087942ms |
+Sean Parent Multiqueue    |  0.322276ms | 713.772288ms | 714.094564ms |
+Sean Parent Work Stealing |  0.311081ms | 621.068337ms | 621.379418ms |
+progschj's ThreadPool     |  0.351528ms | 776.434241ms | 776.785769ms |
+Thread Building Blocks    |  0.999048ms | 651.704924ms | 652.703972ms |
 
 ## Contributions
 All contributions are welcome, </br>

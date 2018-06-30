@@ -112,7 +112,7 @@ namespace sparent_worksteal
     {
         char const*
         name() override
-        { return "Sean Parent Work Stealing Multiqueue"; }
+        { return "Sean Parent Work Stealing"; }
 
         void prepare() override
         { internal::sys = std::make_unique<internal::task_system>(); }

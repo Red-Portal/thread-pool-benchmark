@@ -32,41 +32,7 @@
 
 namespace pool_bench
 {
-    // namespace karma = boost::spirit::karma;
-
-    // template <typename OutputIterator>
-    // struct matrix_grammar 
-    //     : karma::grammar<OutputIterator, std::vector<std::vector<int> >()>
-    // {
-    //     matrix_grammar()
-    //         : matrix_grammar::base_type(matrix)
-    //     {
-    //         using karma::int_;
-    //         using karma::right_align;
-    //         using karma::eol;
-
-    //         element = right_align(10)[int_];
-    //         row = '|' << *element << '|';
-    //         matrix = row % eol;
-    //     }
-
-    //     karma::rule<OutputIterator, std::vector<std::vector<int> >()> matrix;
-    //     karma::rule<OutputIterator, std::vector<int>()> row;
-    //     karma::rule<OutputIterator, int()> element;
-    // };
-
-    
-    // template <typename OutputIterator>
-    // bool generate_matrix(OutputIterator& sink
-    //                      , std::vector<std::vector<int> > const& v)
-    // {
-    //     matrix_grammar<OutputIterator> matrix;
-    //     return karma::generate(
-    //         sink,                           // destination: output iterator
-    //         matrix,                         // the generator
-    //         v                               // the data to output 
-    //         );
-    // }
+    using namespace std::string_literals;
 
     template<class...Durations, class DurationIn>
     std::tuple<Durations...>
@@ -110,30 +76,43 @@ namespace pool_bench
     }
 
     template<typename Duration>
-    inline std::string
+    inline double
     format_time(Duration&& duration)
     {
-        // auto broken = break_down_durations<chrono::milliseconds,
-        //                                    chrono::microseconds,
-        //                                    chrono::nanoseconds>(duration);
-        // auto formmated = std::to_string(std::get<0>(broken).count()) + ":"
-        //     + std::to_string(std::get<1>(broken).count()) + ":"
-        //     + std::to_string(std::get<2>(broken).count()) + " ms";
-
         using float_millisec = chrono::duration<double, std::milli>;
-        return std::to_string(
-            chrono::duration_cast<float_millisec>(duration).count());
+        return chrono::duration_cast<float_millisec>(duration).count();
+    }
+
+    inline std::pair<std::string, std::string>
+    make_output_format(std::vector<pool_bench::runner*> const& runners)
+    {
+        size_t max_len = 0;
+        for(auto& i : runners)
+            max_len = std::max(max_len, std::string(i->name()).size());
+        auto report_format = "%-"s + std::to_string(max_len) + "s  %10fms  %10fms  %10fms\n";
+        auto header_format = "%-"s + std::to_string(max_len) + "s  %10s  %10s  %10s\n"s;
+        return {header_format, report_format};
     }
 
     void run_benchmarks(std::vector<pool_bench::suite*>& suites,
                         std::vector<pool_bench::runner*>& runners)
     {
+        auto output = make_output_format(runners);
+        auto header_format = std::get<0>(output);
+        auto report_format = std::get<1>(output);
+
         for(auto& i : suites)
         {
             std::cout << "-- preparing " << i->name() << std::endl;
             i->prepare();
             std::cout << "-- preparing " << i->name() << " - done\n"
                       << std::endl;
+
+            printf(header_format.c_str(),
+                   "< gladiatior >",
+                   " < forking >",
+                   " < joining >",
+                   " < total >");
 
             size_t problem_size = i->problem_size();
             auto task = i->task();
@@ -146,25 +125,25 @@ namespace pool_bench
                 auto join_duration = std::get<1>(result);
                 auto total_duration = fork_duration + join_duration;
 
-                std::cout << j->name()
-                          << " forking: " << format_time(fork_duration) << "ms, "
-                          << " joining: " << format_time(join_duration) << "ms, "
-                          << " total: " << format_time(total_duration) << "ms\n";
+                //printf("%s %10fms %10fms %10fms\n",
+                printf(report_format.c_str(),
+                       j->name(),
+                       format_time(fork_duration),
+                       format_time(join_duration),
+                       format_time(total_duration));
 
                 if(!i->check_result())
                 {
-                    using namespace std::string_literals;
                     std::string err = "Error: Incorrect computation result while running \""s
                         + std::string(i->name()) + "\" on \""s + std::string(j->name()) + "\"\n"s;
                     throw std::runtime_error(err);
                 }
-
                 j->teardown();
             }
             std::cout << "\n-- tearing down " << i->name() << std::endl;
-            i->teardown();
-            std::cout << "-- tearing down " << i->name() << " - done" << std::endl;
-        }
+                i->teardown();
+                std::cout << "-- tearing down " << i->name() << " - done" << std::endl;
+            }
     }
 }
 
