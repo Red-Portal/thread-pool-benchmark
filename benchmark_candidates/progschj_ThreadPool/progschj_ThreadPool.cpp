@@ -21,7 +21,7 @@
 #include <cstdlib>
 
 #include <pool_bench.hpp>
-#include "ThreadPool/ThreadPool.h"
+#include "progschj_ThreadPool/ThreadPool.h"
 
 namespace progschj
 {

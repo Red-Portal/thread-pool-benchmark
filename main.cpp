@@ -28,8 +28,46 @@
 
 #include "pool_bench.hpp"
 
+#include <boost/spirit/include/karma.hpp>
+
 namespace pool_bench
 {
+    // namespace karma = boost::spirit::karma;
+
+    // template <typename OutputIterator>
+    // struct matrix_grammar 
+    //     : karma::grammar<OutputIterator, std::vector<std::vector<int> >()>
+    // {
+    //     matrix_grammar()
+    //         : matrix_grammar::base_type(matrix)
+    //     {
+    //         using karma::int_;
+    //         using karma::right_align;
+    //         using karma::eol;
+
+    //         element = right_align(10)[int_];
+    //         row = '|' << *element << '|';
+    //         matrix = row % eol;
+    //     }
+
+    //     karma::rule<OutputIterator, std::vector<std::vector<int> >()> matrix;
+    //     karma::rule<OutputIterator, std::vector<int>()> row;
+    //     karma::rule<OutputIterator, int()> element;
+    // };
+
+    
+    // template <typename OutputIterator>
+    // bool generate_matrix(OutputIterator& sink
+    //                      , std::vector<std::vector<int> > const& v)
+    // {
+    //     matrix_grammar<OutputIterator> matrix;
+    //     return karma::generate(
+    //         sink,                           // destination: output iterator
+    //         matrix,                         // the generator
+    //         v                               // the data to output 
+    //         );
+    // }
+
     template<class...Durations, class DurationIn>
     std::tuple<Durations...>
     break_down_durations( DurationIn d )
@@ -75,14 +113,16 @@ namespace pool_bench
     inline std::string
     format_time(Duration&& duration)
     {
-        
-        auto broken = break_down_durations<chrono::milliseconds,
-                                           chrono::microseconds,
-                                           chrono::nanoseconds>(duration);
-        auto formmated = std::to_string(std::get<0>(broken).count()) + ":"
-            + std::to_string(std::get<1>(broken).count()) + ":"
-            + std::to_string(std::get<2>(broken).count()) + " ms";
-        return formmated;
+        // auto broken = break_down_durations<chrono::milliseconds,
+        //                                    chrono::microseconds,
+        //                                    chrono::nanoseconds>(duration);
+        // auto formmated = std::to_string(std::get<0>(broken).count()) + ":"
+        //     + std::to_string(std::get<1>(broken).count()) + ":"
+        //     + std::to_string(std::get<2>(broken).count()) + " ms";
+
+        using float_millisec = chrono::duration<double, std::milli>;
+        return std::to_string(
+            chrono::duration_cast<float_millisec>(duration).count());
     }
 
     void run_benchmarks(std::vector<pool_bench::suite*>& suites,
@@ -107,9 +147,9 @@ namespace pool_bench
                 auto total_duration = fork_duration + join_duration;
 
                 std::cout << j->name()
-                          << " forking: " << format_time(fork_duration) << ", "
-                          << " joining: " << format_time(join_duration) << ", "
-                          << " total: " << format_time(total_duration) << "\n";
+                          << " forking: " << format_time(fork_duration) << "ms, "
+                          << " joining: " << format_time(join_duration) << "ms, "
+                          << " total: " << format_time(total_duration) << "ms\n";
 
                 if(!i->check_result())
                 {
