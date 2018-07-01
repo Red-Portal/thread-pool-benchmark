@@ -39,6 +39,7 @@ Intel Core i7-7700HQ, Manjaro Linux, clang 6.0.0 </br>
 | Thread Building Blocks    |   2.811747ms | 466.988086ms | 469.799833ms |
 
  </br>
+
 |        fluid solver       |   forking    |    joining   |     total    |
 |---------------------------|--------------|--------------|--------------|
 | C++ thread                | 339.847765ms |  25.687145ms | 365.534910ms |
