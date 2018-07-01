@@ -13,7 +13,8 @@ set(CMAKE_MODULE_PATH
 
 set(SOURCE_FILES
     ${PROJECT_SOURCE_DIR}/main.cpp
-    ${PROJECT_SOURCE_DIR}/benchmark_problems/matrix_multiplication.cpp)
+    ${PROJECT_SOURCE_DIR}/benchmark_problems/matrix_multiplication.cpp
+    ${PROJECT_SOURCE_DIR}/benchmark_problems/fluid_solver.cpp)
 
 set(BENCHMARK_CANDIDATES_DIR ${PROJECT_SOURCE_DIR}/benchmark_candidates)
 
