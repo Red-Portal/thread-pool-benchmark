@@ -30,25 +30,25 @@ Intel Core i7-7700HQ, Manjaro Linux, clang 6.0.0 </br>
      
 |   matrix multiplication   |   forking    |    joining   |     total    |
 |---------------------------|--------------|--------------|--------------|
-| C++ thread                | 350.864608ms | 117.121797ms | 467.986405ms |
-| Sean Parent Naive         |   0.346831ms | 386.044511ms | 386.391342ms |
-| Sean Parent Multiqueue    |   0.361352ms | 451.210573ms | 451.571925ms |
-| Sean Parent Work Stealing |   0.357595ms | 423.890832ms | 424.248427ms |
-| progschj's ThreadPool     |   0.364707ms | 536.531084ms | 536.895791ms |
-| Grand Central Dispatch    |   0.519471ms | 393.838209ms | 394.357680ms |
-| Thread Building Blocks    |   2.811747ms | 466.988086ms | 469.799833ms |
+| C++ thread                | 473.692266ms |  14.826739ms | 488.519005ms |
+| Sean Parent Naive         |   0.312164ms | 423.402574ms | 423.714738ms |
+| Sean Parent Multiqueue    |   0.314355ms | 472.653375ms | 472.967730ms |
+| Sean Parent Work Stealing |   0.292475ms | 443.798525ms | 444.091000ms |
+| progschj's ThreadPool     |   0.286827ms | 562.374141ms | 562.660968ms |
+| Grand Central Dispatch    |   0.374894ms | 423.493407ms | 423.868301ms |
+| Thread Building Blocks    |   1.042765ms | 488.946873ms | 489.989638ms |
 
  </br>
 
-|        fluid solver       |   forking    |    joining   |     total    |
-|---------------------------|--------------|--------------|--------------|
-| C++ thread                | 339.847765ms |  25.687145ms | 365.534910ms |
-| Sean Parent Naive         |   1.718654ms | 230.052244ms | 231.770898ms |
-| Sean Parent Multiqueue    |   1.641807ms | 238.741484ms | 240.383291ms |
-| Sean Parent Work Stealing |   3.819882ms | 226.058950ms | 229.878832ms |
-| progschj's ThreadPool     |   1.988575ms | 340.374477ms | 342.363052ms |
-| Grand Central Dispatch    |   2.363453ms | 231.863898ms | 234.227351ms |
-| Thread Building Blocks    |   3.641304ms | 244.921029ms | 248.562333ms |
+|        fluid solver       |    forking    |    joining    |     total     |
+|---------------------------|---------------|---------------|---------------|
+| C++ thread                | 1252.285177ms |  375.896608ms | 1628.181785ms |
+| Sean Parent Naive         |   19.664301ms | 1149.353465ms | 1169.017766ms |
+| Sean Parent Multiqueue    |    6.706725ms | 1162.610971ms | 1169.317696ms |
+| Sean Parent Work Stealing |    9.154444ms | 1149.240601ms | 1158.395045ms |
+| progschj's ThreadPool     |    7.787490ms | 1559.932310ms | 1567.719800ms | 
+| Grand Central Dispatch    |    9.418396ms | 1161.239495ms | 1170.657891ms |
+| Thread Building Blocks    |   10.892387ms | 1224.662278ms | 1235.554665ms |
 
 ## Contributions
 All contributions are welcome, </br>

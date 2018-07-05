@@ -52,27 +52,31 @@ namespace pool_bench
         return retval;
     }
 
-    template<typename F, typename Ft>
+    template<typename F>
     inline std::tuple<chrono::nanoseconds, chrono::nanoseconds>
-    execute_benchmark(F&& f, Ft&& task, size_t problem_size)
+    execute_benchmark(F&& f, pool_bench::suite& task)
     {
-        auto tasks = std::vector<std::future<void>>();
-        tasks.reserve(problem_size);
+        auto insertion = std::vector<chrono::nanoseconds>();
+        insertion.reserve(task.problem_size());
 
-        auto insert_start = chrono::steady_clock::now();
-        for(size_t i = 0; i < problem_size; ++i) {
-            tasks.emplace_back(f([=]{ task(i); }));
-        }
-        auto insert_stop = chrono::steady_clock::now();
+        auto async_call = [&f, &insertion](std::function<void(void)>&& task)
+                          {
+                              auto insert_start = chrono::steady_clock::now();
+                              auto future = f(std::move(task));
+                              auto insert_stop = chrono::steady_clock::now();
+                              insertion.emplace_back(insert_stop - insert_start);
+                              return future;
+                          };
 
-        auto retrieve_start = chrono::steady_clock::now();
-        for(auto& i : tasks)
-            i.get();
-        auto retrieve_stop = chrono::steady_clock::now();
+        auto span_start = chrono::steady_clock::now();
+        task.run(std::move(async_call));
+        auto span_stop = chrono::steady_clock::now();
 
-        auto insert_duration = insert_stop - insert_start;
-        auto retrieve_duration = retrieve_stop - retrieve_start;
-        return {insert_duration, retrieve_duration};
+        auto insert_duration = std::accumulate(insertion.begin(),
+                                               insertion.end(),
+                                               chrono::nanoseconds());
+        auto span_duration = span_stop - span_start;
+        return {insert_duration, span_duration - insert_duration};
     }
 
     template<typename Duration>
@@ -114,13 +118,10 @@ namespace pool_bench
                    " < joining >",
                    " < total >");
 
-            size_t problem_size = i->problem_size();
-            auto task = i->task();
-
             for(auto& j : runners){
                 j->prepare();
 
-                auto result = pool_bench::execute_benchmark((*j)(), task, problem_size);
+                auto result = pool_bench::execute_benchmark((*j)(), *i);
                 auto fork_duration = std::get<0>(result);
                 auto join_duration = std::get<1>(result);
                 auto total_duration = fork_duration + join_duration;
@@ -141,9 +142,9 @@ namespace pool_bench
                 j->teardown();
             }
             std::cout << "\n-- tearing down " << i->name() << std::endl;
-                i->teardown();
-                std::cout << "-- tearing down " << i->name() << " - done" << std::endl;
-            }
+            i->teardown();
+            std::cout << "-- tearing down " << i->name() << " - done" << std::endl;
+        }
     }
 }
 

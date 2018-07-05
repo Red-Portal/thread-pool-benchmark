@@ -105,20 +105,31 @@ struct matrix_multiplication : public pool_bench::suite
 
     void teardown() override {}
 
-    std::function<void(size_t)>
-    task() override
+    void
+    run(std::function<
+        std::future<void>(std::function<void(void)>&&)>&& async) override
     {
-        return [this](size_t i)
-               {
-                   size_t k = _problem_size;
-                   size_t n = _problem_size;
-                   for(size_t j = 0; j < n; ++j) {
-                       float sum = 0;
-                       for(size_t l = 0; l < k; ++l)
-                           sum += _A[index(i, l, k)] * _B[index(l, j, n)];
-                       _C[index(i, j, n)] = sum;
-                   }
-               };
+        auto task = [this](size_t i)
+                    {
+                        size_t k = _problem_size;
+                        size_t n = _problem_size;
+                        for(size_t j = 0; j < n; ++j) {
+                            float sum = 0;
+                            for(size_t l = 0; l < k; ++l)
+                                sum += _A[index(i, l, k)] * _B[index(l, j, n)];
+                            _C[index(i, j, n)] = sum;
+                        }
+                    };
+
+        auto tasks = std::vector<std::future<void>>();
+        tasks.reserve(_problem_size);
+
+        for(size_t i = 0; i < _problem_size; ++i) {
+            tasks.emplace_back(async([=]{ task(i); }));
+        }
+
+        for(auto& i : tasks)
+            i.get();
     }
 };
 

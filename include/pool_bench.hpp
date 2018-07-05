@@ -71,7 +71,8 @@ namespace pool_bench
         }
 
         virtual size_t problem_size() = 0;
-        virtual std::function<void(size_t)> task() = 0;
+        virtual void run(
+            std::function<std::future<void>(std::function<void(void)>&&)>&& f) = 0;
         virtual char const* name () = 0;
         virtual bool check_result () = 0;
         virtual void prepare () = 0;

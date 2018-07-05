@@ -113,8 +113,8 @@ struct FluidQuantity {
         swap(_src, _dst);
     }
     
-    const std::vector<double>& dst() const {
-        return _dst;
+    const std::vector<double>& src() const {
+        return _src;
     }
     
     double at(int x, int y) const {
@@ -313,7 +313,7 @@ struct FluidSolver {
     }
 
     double operator[](size_t i) const {
-        return _d.dst()[i];
+        return _d.src()[i];
     }
 };
 
@@ -331,6 +331,7 @@ bool is_equal(FluidSolver const& a,
 
 struct fluid_solver : public pool_bench::suite
 {
+    size_t _grid_size;
     size_t _problem_size;
     FluidSolver _solver;
     FluidSolver _solver_blank;
@@ -339,12 +340,13 @@ struct fluid_solver : public pool_bench::suite
     double _timestep;
 
     fluid_solver()
-        :_problem_size(2048 * 3),
-         _solver_answer(_problem_size / 3, _problem_size / 3, 0.1),
-         _solver_blank(_problem_size / 3, _problem_size / 3, 0.1), 
-         _solver(_problem_size / 3, _problem_size / 3, 0.1), 
-         _epsilon(1e-4),
-         _timestep(0.05)
+        :_grid_size(2048),
+         _problem_size(_grid_size * 3 * 4),
+        _solver_answer(_grid_size, _grid_size, 0.1),
+        _solver_blank(_grid_size, _grid_size, 0.1), 
+        _solver(_grid_size, _grid_size, 0.1), 
+        _epsilon(1e-4),
+        _timestep(0.05)
     {}
 
     size_t
@@ -366,76 +368,117 @@ struct fluid_solver : public pool_bench::suite
     
     void prepare() override
     {
-        _solver_answer.buildRhs();
-        _solver_answer.project(1000, _timestep);
-        _solver_answer.applyPressure(_timestep);
-
         _solver_blank = _solver_answer;
 
-        _solver_answer._d.advect(_timestep, _solver_answer._u, _solver_answer._v);
-        _solver_answer._u.advect(_timestep, _solver_answer._u, _solver_answer._v);
-        _solver_answer._v.advect(_timestep, _solver_answer._u, _solver_answer._v);
+        for(size_t i = 0; i < 4; ++i)
+        {
+            _solver_answer.buildRhs();
+            _solver_answer.project(1000, _timestep);
+            _solver_answer.applyPressure(_timestep);
+
+            _solver_answer._d.advect(_timestep, _solver_answer._u, _solver_answer._v);
+            _solver_answer._u.advect(_timestep, _solver_answer._u, _solver_answer._v);
+            _solver_answer._v.advect(_timestep, _solver_answer._u, _solver_answer._v);
+
+            _solver_answer._d.flip();
+            _solver_answer._u.flip();
+            _solver_answer._v.flip();
+        }
     }
 
     void teardown() override {}
 
-    std::function<void(size_t)>
-    task() override
+    void
+    run(std::function<
+        std::future<void>(std::function<void(void)>&&)>&& async) override
     {
         _solver = _solver_blank;
-        return [this](size_t i)
-               {
-                   size_t type = i / _solver._h;
 
-                   if(type == 0)
-                   {
-                       size_t idx = 0;
-                       size_t iy = i % _solver._h;
-                       for (int ix = 0; ix < _solver._w; ix++, idx++) {
-                           double x = ix + _solver._d._ox;
-                           double y = iy + _solver._d._oy;
+        for(size_t i = 0; i < 4; ++i)
+        {
+            auto tasks = std::vector<std::future<void>>();
+            tasks.reserve(_grid_size);
+
+            _solver.buildRhs();
+            _solver.project(1000, _timestep);
+            _solver.applyPressure(_timestep);
+
+            for(size_t j = 0; j < _grid_size; ++j)
+            {
+                auto d_advect =
+                    [this, j]
+                    {
+                        size_t idx = 0;
+                        size_t iy = j;
+                        for (int ix = 0; ix < _solver._w; ix++, idx++) {
+                            double x = ix + _solver._d._ox;
+                            double y = iy + _solver._d._oy;
                 
-                           _solver._d.rungeKutta3(x, y,
-                                                  _timestep,
-                                                  _solver._u,
-                                                  _solver._v);
+                            _solver._d.rungeKutta3(x, y,
+                                                   _timestep,
+                                                   _solver._u,
+                                                   _solver._v);
                 
-                           _solver._d._dst[idx] = _solver._d.cerp(x, y);
-                       }
-                   }
-                   else if(type == 1)
-                   {
-                       size_t idx = 0;
-                       size_t iy = i % _solver._h;
-                       for (int ix = 0; ix < _solver._w; ix++, idx++) {
-                           double x = ix + _solver._u._ox;
-                           double y = iy + _solver._u._oy;
+                            _solver._d._dst[idx] = _solver._d.cerp(x, y);
+                        }
+                    };
                 
-                           _solver._u.rungeKutta3(x, y,
-                                                  _timestep,
-                                                  _solver._u,
-                                                  _solver._v);
+                tasks.emplace_back(async(d_advect));
+            }
+
+            for(size_t j = 0; j < _grid_size; ++j)
+            {
+                auto u_advect =
+                    [this, j]
+                    {
+                        size_t idx = 0;
+                        size_t iy = j;
+                        for (int ix = 0; ix < _solver._w; ix++, idx++) {
+                            double x = ix + _solver._u._ox;
+                            double y = iy + _solver._u._oy;
                 
-                           _solver._u._dst[idx] = _solver._u.cerp(x, y);
-                       }
-                   }
-                   else
-                   {
-                       size_t idx = 0;
-                       size_t iy = i % _solver._h;
-                       for (int ix = 0; ix < _solver._w; ix++, idx++) {
-                           double x = ix + _solver._v._ox;
-                           double y = iy + _solver._v._oy;
+                            _solver._u.rungeKutta3(x, y,
+                                                   _timestep,
+                                                   _solver._u,
+                                                   _solver._v);
                 
-                           _solver._v.rungeKutta3(x, y,
-                                                  _timestep,
-                                                  _solver._u,
-                                                  _solver._v);
+                            _solver._u._dst[idx] = _solver._u.cerp(x, y);
+                        }
+                    };
+
+                tasks.emplace_back(async(u_advect));
+            }
+
+            for(size_t j = 0; j < _grid_size; ++j)
+            {
+                auto v_advect =
+                    [this, j]
+                    {
+                        size_t idx = 0;
+                        size_t iy = j;
+                        for (int ix = 0; ix < _solver._w; ix++, idx++) {
+                            double x = ix + _solver._v._ox;
+                            double y = iy + _solver._v._oy;
                 
-                           _solver._v._dst[idx] = _solver._v.cerp(x, y);
-                       }
-                   }
-               };
+                            _solver._v.rungeKutta3(x, y,
+                                                   _timestep,
+                                                   _solver._u,
+                                                   _solver._v);
+                
+                            _solver._v._dst[idx] = _solver._v.cerp(x, y);
+                        }
+                    };
+
+                tasks.emplace_back(async(v_advect));
+            }
+
+            for(auto& i : tasks)
+                i.get();
+
+            _solver._u.flip();
+            _solver._d.flip();
+            _solver._v.flip();
+        }
     }
 };
 
