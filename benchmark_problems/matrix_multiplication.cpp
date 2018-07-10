@@ -83,7 +83,7 @@ struct matrix_multiplication : public pool_bench::suite
     void prepare() override
     {
         std::random_device seed;
-        std::mt19937 rng;
+        std::mt19937 rng(seed());
         std::normal_distribution<float> dist(0, 1);
 
         generate_random(dist, rng, _A.begin(), _A.end());

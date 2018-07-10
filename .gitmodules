@@ -1,3 +1,6 @@
 [submodule "benchmark_candidates/progschj_ThreadPool/progschj_ThreadPool"]
 	path = benchmark_candidates/progschj_ThreadPool/progschj_ThreadPool
 	url = https://github.com/progschj/ThreadPool.git
+[submodule "benchmark_candidates/thread-pool-cpp/thread-pool-cpp"]
+	path = benchmark_candidates/thread-pool-cpp/thread-pool-cpp
+	url = https://github.com/inkooboo/thread-pool-cpp.git
